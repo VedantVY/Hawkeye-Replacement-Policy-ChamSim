@@ -23,6 +23,7 @@ void hawkeye::replacement_cache_fill(uint32_t triggering_cpu, long set, long way
 void hawkeye::update_replacement_state(uint32_t triggering_cpu, long set, long way, champsim::address full_addr, champsim::address ip,
                                    champsim::address victim_addr, access_type type, uint8_t hit)
 {
+  if (access_type{type} == access_type::WRITE) return;
    if(!hit && RRPV[set][way] < 7){   
     uint64_t victimBlockAddr = victim_addr.to<uint64_t>() >> champsim::to_underlying(OFFSET_BITS);
     auto victimEntry = sampledCache.find(victimBlockAddr);
@@ -38,7 +39,6 @@ void hawkeye::update_replacement_state(uint32_t triggering_cpu, long set, long w
   }
   Classification cls = predictor.predict(ip.to<uint64_t>()) ? Classification::CACHE_FRIENDLY : Classification::CACHE_AVERSE;
   rrip::update_rrpv(RRPV[set], way, cls, hit);
-  if (access_type{type} == access_type::WRITE) return;
   //bool isFound = false;
   uint64_t blockAddr = full_addr.to<uint64_t>() >> champsim::to_underlying(OFFSET_BITS);
   auto entry = sampledCache.find(blockAddr);
